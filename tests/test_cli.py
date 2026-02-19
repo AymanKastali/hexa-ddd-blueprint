@@ -22,6 +22,7 @@ def test_help():
 
 def test_new_help(monkeypatch):
     monkeypatch.setenv("COLUMNS", "200")
+    monkeypatch.setenv("NO_COLOR", "1")
     result = runner.invoke(app, ["new", "--help"])
     assert result.exit_code == 0
     assert "--description" in result.output
