@@ -118,6 +118,7 @@ def test_docker_generated(project_dir):
     """Verify Docker files are generated when enabled."""
     assert (project_dir / "docker" / "Dockerfile").exists()
     assert (project_dir / "docker" / "docker-compose.yml").exists()
+    assert (project_dir / ".dockerignore").exists()
 
 
 def test_ci_generated(project_dir):
@@ -143,6 +144,7 @@ def test_no_docker(tmp_path, monkeypatch):
     config = {**BASE_CONFIG, "name": "nodocker", "docker": False}
     generate_project(config)
     assert not (tmp_path / "nodocker" / "docker").exists()
+    assert not (tmp_path / "nodocker" / ".dockerignore").exists()
 
 
 def test_no_ci(tmp_path, monkeypatch):

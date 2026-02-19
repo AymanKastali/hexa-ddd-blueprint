@@ -226,6 +226,7 @@ def _generate_docker(root: Path, context: dict[str, Any]) -> None:
         docker / "docker-compose.yml",
         _render("docker/docker-compose.yml.j2", context),
     )
+    _write_file(root / ".dockerignore", _render("docker/dockerignore.j2", context))
 
 
 def _generate_ci(root: Path, context: dict[str, Any]) -> None:
