@@ -35,7 +35,11 @@ def test_core_structure(project_dir):
     assert (src / "domain" / "models" / "__init__.py").exists()
     assert (src / "domain" / "services" / "__init__.py").exists()
     assert (src / "domain" / "events" / "__init__.py").exists()
-    assert (src / "domain" / "exceptions.py").exists()
+    assert (src / "domain" / "events" / "base.py").exists()
+    assert (src / "domain" / "events" / "events.py").exists()
+    assert (src / "domain" / "exceptions" / "__init__.py").exists()
+    assert (src / "domain" / "exceptions" / "base.py").exists()
+    assert (src / "domain" / "exceptions" / "validation.py").exists()
 
     # Application layer
     assert (src / "application" / "__init__.py").exists()
@@ -55,7 +59,30 @@ def test_core_structure(project_dir):
 
     # Config (inside adapters) & shared kernel (inside domain)
     assert (src / "adapters" / "config" / "settings.py").exists()
-    assert (src / "domain" / "shared" / "base_entity.py").exists()
+    assert (src / "domain" / "shared" / "building_blocks.py").exists()
+
+
+def test_domain_building_blocks(project_dir):
+    """Verify domain building blocks contain the expected classes."""
+    src = project_dir / "src" / "testgen"
+
+    # base_entity.py has Id, Entity, AggregateRoot — not old BaseEntity
+    base_entity = (src / "domain" / "shared" / "building_blocks.py").read_text()
+    assert "class Id[T]:" in base_entity
+    assert "class Entity[IdT]:" in base_entity
+    assert "class AggregateRoot[IdT]" in base_entity
+    assert "BaseEntity" not in base_entity
+
+    # events/base.py has DomainEvent
+    domain_event = (src / "domain" / "events" / "base.py").read_text()
+    assert "class DomainEvent:" in domain_event
+
+    # exceptions package has DomainError, ValidationError, RequiredFieldError
+    validation = (src / "domain" / "exceptions" / "validation.py").read_text()
+    assert "class RequiredFieldError" in validation
+    assert "class ValidationError" in validation
+    base_exc = (src / "domain" / "exceptions" / "base.py").read_text()
+    assert "class DomainError" in base_exc
 
 
 def test_root_files(project_dir):
@@ -279,3 +306,13 @@ def test_app_lifespan_uses_database(tmp_path, monkeypatch):
     assert "database.connect()" in app_content
     assert "database.disconnect()" in app_content
     assert "engine.dispose()" not in app_content
+
+
+def test_app_lifespan_no_db(project_dir):
+    """Verify app.py has no database lifecycle calls when db=none."""
+    app_content = (
+        project_dir / "src" / "testgen"
+        / "adapters" / "inbound" / "api" / "rest" / "app.py"
+    ).read_text()
+    assert "database.connect()" not in app_content
+    assert "database.disconnect()" not in app_content

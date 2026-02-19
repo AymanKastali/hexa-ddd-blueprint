@@ -87,8 +87,24 @@ def _generate_source_tree(src: Path, context: dict[str, Any]) -> None:
     _write_init(src / "domain" / "services")
     _write_init(src / "domain" / "events")
     _write_file(
-        src / "domain" / "exceptions.py",
-        _render("base/exceptions.py.j2", context),
+        src / "domain" / "events" / "base.py",
+        _render("base/domain_event.py.j2", context),
+    )
+    _write_file(
+        src / "domain" / "events" / "events.py",
+        _render("base/events.py.j2", context),
+    )
+    _write_file(
+        src / "domain" / "exceptions" / "__init__.py",
+        _render("base/exceptions/__init__.py.j2", context),
+    )
+    _write_file(
+        src / "domain" / "exceptions" / "base.py",
+        _render("base/exceptions/base.py.j2", context),
+    )
+    _write_file(
+        src / "domain" / "exceptions" / "validation.py",
+        _render("base/exceptions/validation.py.j2", context),
     )
 
     # Application layer
@@ -136,8 +152,8 @@ def _generate_source_tree(src: Path, context: dict[str, Any]) -> None:
     # Shared kernel (inside domain layer)
     _write_init(src / "domain" / "shared")
     _write_file(
-        src / "domain" / "shared" / "base_entity.py",
-        _render("base/base_entity.py.j2", context),
+        src / "domain" / "shared" / "building_blocks.py",
+        _render("base/building_blocks.py.j2", context),
     )
 
 

@@ -122,8 +122,9 @@ def _validate_project_name(name: str) -> None:
     """Validate that the project name is a valid Python identifier."""
     if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", name):
         logger.error(
-            f"Invalid project name '{name}'. Must be a valid Python identifier "
-            "(letters, digits, underscores; cannot start with a digit)."
+            f"Invalid project name '{name}'. Only letters, digits, and underscores "
+            "are allowed (cannot start with a digit). "
+            f"Hint: try '{re.sub(r'[^a-zA-Z0-9_]', '_', name)}' instead."
         )
         raise typer.Exit(code=1)
     if keyword.iskeyword(name):
