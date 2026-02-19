@@ -1,0 +1,31 @@
+"""Dependency injection wiring for {{ project_name }}.
+
+This module wires port interfaces (abstractions) to their concrete
+adapter implementations using FastAPI's Depends() mechanism.
+"""
+{% if db == "postgres" %}
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from {{ project_name }}.adapters.outbound.persistence.postgres.config import get_session
+
+
+async def get_session_dep() -> AsyncGenerator[AsyncSession, None]:
+    """Provide a database session.
+
+    Use this as a FastAPI dependency, then pass the session to your
+    repository implementations::
+
+        @router.get("/orders/{order_id}")
+        async def get_order(
+            session: AsyncSession = Depends(get_session_dep),
+        ) -> OrderResponse:
+            repo = SQLAlchemyOrderRepository(session)
+            ...
+    """
+    async for session in get_session():
+        yield session
+{% else %}
+# No database configured. Add dependency providers here as needed.
+{% endif %}

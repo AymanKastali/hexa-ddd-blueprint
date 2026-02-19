@@ -1,0 +1,72 @@
+@startuml {{ project_name }} — Hexagonal Architecture
+!theme plain
+
+title {{ project_name }} — DDD + Hexagonal Architecture
+
+skinparam component {
+  BackgroundColor<<domain>> #FEFECE
+  BackgroundColor<<application>> #D4E6F1
+  BackgroundColor<<adapter>> #D5F5E3
+  BackgroundColor<<config>> #FADBD8
+  BackgroundColor<<shared>> #E8DAEF
+}
+
+package "Domain Layer" <<domain>> {
+  [Models\n(Entities, Value Objects, Aggregates)] as models
+  [Domain Services] as domain_services
+  [Domain Events] as domain_events
+  [Exceptions] as exceptions
+  package "Shared Kernel" <<shared>> {
+    [Base Entity] as base_entity
+  }
+}
+
+package "Application Layer" <<application>> {
+  [Inbound Ports\n(Use Case Interfaces)] as inbound_ports
+  [Outbound Ports\n(Database & Repository\nInterfaces)] as outbound_ports
+  [Application Services\n(Use Cases)] as app_services
+  [DTOs] as dtos
+}
+
+package "Adapters Layer" <<adapter>> {
+  package "Inbound Adapters" {
+    [FastAPI Routes] as api
+  }
+  package "Outbound Adapters" {
+{% if db == "postgres" %}
+    [SQLAlchemy\nPersistence] as persistence
+{% else %}
+    [Persistence\n(not configured)] as persistence
+{% endif %}
+  }
+  package "Config" <<config>> {
+    [Settings\n(pydantic-settings)] as config
+  }
+}
+
+' Dependency flow — inward only
+api --> inbound_ports
+api --> dtos
+app_services --> inbound_ports : implements
+app_services --> outbound_ports : uses
+app_services --> models
+app_services --> domain_services
+app_services --> domain_events
+persistence --> outbound_ports : implements
+persistence --> models
+models --> base_entity
+models --> exceptions
+domain_services --> models
+config --> app_services : configures
+
+note bottom of models
+  Pure Python — no framework
+  or infrastructure imports
+end note
+
+note bottom of outbound_ports
+  Abstract interfaces (abc.ABC)
+  defined in the application layer
+end note
+
+@enduml

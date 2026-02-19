@@ -1,0 +1,23 @@
+"""Base entity with identity support for the shared kernel."""
+
+from dataclasses import dataclass, field
+from uuid import UUID, uuid4
+
+
+@dataclass
+class BaseEntity:
+    """Base class for all domain entities.
+
+    Entities are objects with a unique identity that persists over time.
+    Equality is based on identity (id), not structural equality.
+    """
+
+    id: UUID = field(default_factory=uuid4)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, BaseEntity):
+            return NotImplemented
+        return self.id == other.id
+
+    def __hash__(self) -> int:
+        return hash(self.id)

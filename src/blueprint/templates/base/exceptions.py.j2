@@ -1,0 +1,17 @@
+"""Domain-specific exceptions for {{ project_name }}."""
+
+
+class DomainError(Exception):
+    """Base exception for all domain errors."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
+class EntityNotFoundError(DomainError):
+    """Raised when a requested entity does not exist."""
+
+
+class ValidationError(DomainError):
+    """Raised when domain validation fails."""

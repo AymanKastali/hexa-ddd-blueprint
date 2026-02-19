@@ -1,0 +1,13 @@
+"""Allow running with: python -m {{ project_name }}."""
+
+import uvicorn
+
+from {{ project_name }}.adapters.config.settings import settings
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "{{ project_name }}.adapters.inbound.api.rest.app:create_app",
+        factory=True,
+        host=settings.host,
+        port=settings.port,
+    )
