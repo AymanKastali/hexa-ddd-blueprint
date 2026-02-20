@@ -15,8 +15,8 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from {{ project_name }}.adapters.config.settings import settings
-from {{ project_name }}.application.ports.outbound.database import DatabasePort
 from {{ project_name }}.adapters.outbound.logging.logger import logger
+from {{ project_name }}.application.ports.outbound.database import DatabasePort
 
 
 class PostgresDatabase(DatabasePort):
@@ -64,7 +64,7 @@ class PostgresDatabase(DatabasePort):
             return False
 
     @asynccontextmanager
-    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+    async def session(self) -> AsyncGenerator[AsyncSession]:
         """Provide an async database session."""
         async with self._session_factory() as session:
             yield session

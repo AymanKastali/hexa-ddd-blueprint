@@ -9,7 +9,7 @@ from {{ project_name }}.adapters.outbound.persistence.postgres.database import P
 database = PostgresDatabase()
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncGenerator[AsyncSession]:
     """Provide an async database session (FastAPI dependency)."""
     async with database.session() as session:
         yield session

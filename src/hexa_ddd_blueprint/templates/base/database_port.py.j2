@@ -27,6 +27,6 @@ class DatabasePort(ABC):
 
     @abstractmethod
     @asynccontextmanager
-    async def session(self) -> AsyncGenerator[Any, None]:
+    async def session(self) -> AsyncGenerator[Any]:
         """Provide a transactional database session as an async context manager."""
         yield  # pragma: no cover

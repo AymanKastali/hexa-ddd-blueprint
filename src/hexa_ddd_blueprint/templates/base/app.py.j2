@@ -1,21 +1,21 @@
 """FastAPI application factory for {{ project_name }}."""
 
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from {{ project_name }}.adapters.config.settings import settings
 from {{ project_name }}.adapters.outbound.logging.logger import setup_logging
-{% if db == "postgres" %}
+{%- if db == "postgres" %}
 from {{ project_name }}.adapters.outbound.persistence.postgres.config import database
-{% endif %}
+{%- endif %}
 
 setup_logging()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Manage application startup and shutdown."""
 {% if db == "postgres" %}
     await database.connect()
