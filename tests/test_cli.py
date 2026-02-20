@@ -45,17 +45,25 @@ def test_new_help(monkeypatch):
 
 def test_new_with_all_flags(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    result = runner.invoke(app, [
-        "new", "testcli",
-        "--description", "Test project",
-        "--author", "Tester",
-        "--db", "none",
-        "--python", "3.12",
-        "--no-docker",
-        "--no-ci",
-        "--no-devcontainer",
-        "-y",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "new",
+            "testcli",
+            "--description",
+            "Test project",
+            "--author",
+            "Tester",
+            "--db",
+            "none",
+            "--python",
+            "3.12",
+            "--no-docker",
+            "--no-ci",
+            "--no-devcontainer",
+            "-y",
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "testcli" / "pyproject.toml").exists()
     assert (tmp_path / "testcli" / "src" / "testcli" / "__init__.py").exists()
@@ -95,4 +103,67 @@ def test_new_directory_exists(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "existing").mkdir()
     result = runner.invoke(app, ["new", "existing", "-y"])
+    assert result.exit_code != 0
+
+
+def test_new_dot_scaffolds_in_cwd(tmp_path, monkeypatch):
+    """Verify 'new .' scaffolds into the current directory."""
+    project_dir = tmp_path / "my_cool_app"
+    project_dir.mkdir()
+    monkeypatch.chdir(project_dir)
+    result = runner.invoke(
+        app,
+        [
+            "new",
+            ".",
+            "--db",
+            "none",
+            "-d",
+            "Test",
+            "-a",
+            "Dev",
+            "--no-docker",
+            "--no-ci",
+            "--no-devcontainer",
+            "-y",
+        ],
+    )
+    assert result.exit_code == 0
+    assert (project_dir / "src" / "my_cool_app" / "__init__.py").exists()
+    assert (project_dir / "pyproject.toml").exists()
+    # No subdirectory should be created
+    assert not (project_dir / "my_cool_app").exists()
+
+
+def test_new_dot_derives_name_from_hyphenated_dir(tmp_path, monkeypatch):
+    """Verify hyphens in directory name are converted to underscores."""
+    project_dir = tmp_path / "my-cool-app"
+    project_dir.mkdir()
+    monkeypatch.chdir(project_dir)
+    result = runner.invoke(
+        app,
+        [
+            "new",
+            ".",
+            "--db",
+            "none",
+            "-d",
+            "Test",
+            "-a",
+            "Dev",
+            "--no-docker",
+            "--no-ci",
+            "--no-devcontainer",
+            "-y",
+        ],
+    )
+    assert result.exit_code == 0
+    assert (project_dir / "src" / "my_cool_app" / "__init__.py").exists()
+
+
+def test_new_dot_non_empty_directory(tmp_path, monkeypatch):
+    """Verify 'new .' in a non-empty directory exits non-zero."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "existing_file.txt").write_text("content")
+    result = runner.invoke(app, ["new", ".", "-y"])
     assert result.exit_code != 0

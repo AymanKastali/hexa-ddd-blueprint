@@ -3,6 +3,7 @@
 import keyword
 import re
 from enum import StrEnum
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -97,6 +98,14 @@ def new(
         "ci": ci,
         "devcontainer": devcontainer,
     }
+
+    # Handle "." — scaffold into the current directory
+    if config["name"] == ".":
+        cwd = Path.cwd()
+        config["name"] = re.sub(r"[^a-zA-Z0-9_]", "_", cwd.name)
+        config["_use_cwd"] = True
+    else:
+        config["_use_cwd"] = False
 
     if no_interactive:
         # Fill in defaults for any missing values

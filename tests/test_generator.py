@@ -49,7 +49,9 @@ def test_core_structure(project_dir):
     # Adapters layer
     assert (src / "adapters" / "inbound" / "api" / "rest" / "app.py").exists()
     assert (src / "adapters" / "inbound" / "api" / "rest" / "dependencies.py").exists()
-    assert (src / "adapters" / "inbound" / "api" / "rest" / "routes" / "__init__.py").exists()
+    assert (
+        src / "adapters" / "inbound" / "api" / "rest" / "routes" / "__init__.py"
+    ).exists()
     assert (src / "adapters" / "outbound" / "__init__.py").exists()
 
     # Package entry point and logging (hexagonal)
@@ -184,7 +186,9 @@ def test_postgres_db(tmp_path, monkeypatch):
 
 def test_no_db_no_persistence(project_dir):
     """Verify no persistence adapter when db=none."""
-    persistence = project_dir / "src" / "testgen" / "adapters" / "outbound" / "persistence"
+    persistence = (
+        project_dir / "src" / "testgen" / "adapters" / "outbound" / "persistence"
+    )
     assert not persistence.exists()
 
 
@@ -210,7 +214,13 @@ def test_settings_includes_db_config(tmp_path, monkeypatch):
     config = {**BASE_CONFIG, "name": "sqlsettings", "db": "postgres"}
     generate_project(config)
     settings_path = (
-        tmp_path / "sqlsettings" / "src" / "sqlsettings" / "adapters" / "config" / "settings.py"
+        tmp_path
+        / "sqlsettings"
+        / "src"
+        / "sqlsettings"
+        / "adapters"
+        / "config"
+        / "settings.py"
     )
     settings = settings_path.read_text()
     assert "database_url" in settings
@@ -278,7 +288,9 @@ def test_no_repository_port(tmp_path, monkeypatch):
     generate_project(config)
     src = tmp_path / "norepo" / "src" / "norepo"
     assert not (src / "application" / "ports" / "outbound" / "repository.py").exists()
-    repos_path = src / "adapters" / "outbound" / "persistence" / "postgres" / "repositories.py"
+    repos_path = (
+        src / "adapters" / "outbound" / "persistence" / "postgres" / "repositories.py"
+    )
     repos = repos_path.read_text()
     assert "RepositoryPort" not in repos
 
@@ -295,7 +307,13 @@ def test_settings_includes_pool_config(tmp_path, monkeypatch):
     config = {**BASE_CONFIG, "name": "poolproj", "db": "postgres"}
     generate_project(config)
     settings_path = (
-        tmp_path / "poolproj" / "src" / "poolproj" / "adapters" / "config" / "settings.py"
+        tmp_path
+        / "poolproj"
+        / "src"
+        / "poolproj"
+        / "adapters"
+        / "config"
+        / "settings.py"
     )
     content = settings_path.read_text()
     assert "db_pool_size" in content
@@ -309,8 +327,15 @@ def test_app_lifespan_uses_database(tmp_path, monkeypatch):
     config = {**BASE_CONFIG, "name": "lifeproj", "db": "postgres"}
     generate_project(config)
     app_content = (
-        tmp_path / "lifeproj" / "src" / "lifeproj"
-        / "adapters" / "inbound" / "api" / "rest" / "app.py"
+        tmp_path
+        / "lifeproj"
+        / "src"
+        / "lifeproj"
+        / "adapters"
+        / "inbound"
+        / "api"
+        / "rest"
+        / "app.py"
     ).read_text()
     assert "database.connect()" in app_content
     assert "database.disconnect()" in app_content
@@ -320,8 +345,14 @@ def test_app_lifespan_uses_database(tmp_path, monkeypatch):
 def test_app_lifespan_no_db(project_dir):
     """Verify app.py has no database lifecycle calls when db=none."""
     app_content = (
-        project_dir / "src" / "testgen"
-        / "adapters" / "inbound" / "api" / "rest" / "app.py"
+        project_dir
+        / "src"
+        / "testgen"
+        / "adapters"
+        / "inbound"
+        / "api"
+        / "rest"
+        / "app.py"
     ).read_text()
     assert "database.connect()" not in app_content
     assert "database.disconnect()" not in app_content
@@ -330,8 +361,13 @@ def test_app_lifespan_no_db(project_dir):
 def test_logging_adapter_uses_rich(project_dir):
     """Verify logging adapter uses Rich and settings-based configuration."""
     content = (
-        project_dir / "src" / "testgen"
-        / "adapters" / "outbound" / "logging" / "logger.py"
+        project_dir
+        / "src"
+        / "testgen"
+        / "adapters"
+        / "outbound"
+        / "logging"
+        / "logger.py"
     ).read_text()
     assert "RichHandler" in content
     assert "settings.debug" in content
@@ -341,8 +377,13 @@ def test_logging_adapter_uses_rich(project_dir):
 def test_logger_port_exists(project_dir):
     """Verify LoggerPort protocol is generated in ports layer."""
     content = (
-        project_dir / "src" / "testgen"
-        / "application" / "ports" / "outbound" / "logger.py"
+        project_dir
+        / "src"
+        / "testgen"
+        / "application"
+        / "ports"
+        / "outbound"
+        / "logger.py"
     ).read_text()
     assert "LoggerPort" in content
     assert "Protocol" in content
@@ -353,3 +394,23 @@ def test_pyproject_has_rich_not_loggerizer(project_dir):
     pyproject = (project_dir / "pyproject.toml").read_text()
     assert "rich" in pyproject
     assert "loggerizer" not in pyproject
+
+
+def test_generate_use_cwd(tmp_path, monkeypatch):
+    """Verify generate_project scaffolds into cwd when _use_cwd is True."""
+    monkeypatch.chdir(tmp_path)
+    config = {**BASE_CONFIG, "name": "testgen", "_use_cwd": True}
+    generate_project(config)
+    # Files should be in tmp_path directly, not in a subdirectory
+    assert (tmp_path / "src" / "testgen" / "__init__.py").exists()
+    assert (tmp_path / "pyproject.toml").exists()
+    assert not (tmp_path / "testgen").exists()
+
+
+def test_generate_use_cwd_non_empty(tmp_path, monkeypatch):
+    """Verify generate_project raises FileExistsError for non-empty cwd."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "existing.txt").write_text("content")
+    config = {**BASE_CONFIG, "name": "testgen", "_use_cwd": True}
+    with pytest.raises(FileExistsError, match="not empty"):
+        generate_project(config)

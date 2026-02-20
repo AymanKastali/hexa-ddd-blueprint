@@ -40,12 +40,20 @@ def generate_project(config: dict[str, Any]) -> None:
             name, description, author, db, python, docker, ci, devcontainer
     """
     name = config["name"]
-    root = Path.cwd() / name
 
-    if root.exists():
-        raise FileExistsError(
-            f"Directory '{name}' already exists. Remove it or choose a different name."
-        )
+    if config.get("_use_cwd"):
+        root = Path.cwd()
+        if any(root.iterdir()):
+            raise FileExistsError(
+                f"Current directory '{root}' is not empty. "
+                "Use '.' only in an empty directory."
+            )
+    else:
+        root = Path.cwd() / name
+        if root.exists():
+            raise FileExistsError(
+                f"Directory '{name}' already exists. Remove it or choose a different name."
+            )
 
     src = root / "src" / name
 
