@@ -84,6 +84,7 @@ def _generate_source_tree(src: Path, context: dict[str, Any]) -> None:
     # Domain layer
     _write_init(src / "domain")
     _write_init(src / "domain" / "models")
+    _write_init(src / "domain" / "ports")
     _write_init(src / "domain" / "services")
     _write_init(src / "domain" / "events")
     _write_file(
